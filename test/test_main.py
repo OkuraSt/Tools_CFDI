@@ -1,5 +1,5 @@
 from os.path import join as join_path, dirname, abspath, isfile
-from main import generar_conceptos_cfdi
+from main import generar_conceptos_cfdi, generar_xml_uuid_folio
 from bs4 import BeautifulSoup
 
 # generar_conceptos_cfdi es una funcion que nos permite modificar
@@ -45,3 +45,28 @@ def test_generar_conceptos_cfdi():
         assert concepto_2['descripcion'] == concepto_2_xml['descripcion']
         assert concepto_2['importe'] == concepto_2_xml['importe']
         assert concepto_2['valorUnitario'] == concepto_2_xml['valorUnitario']
+
+
+# generar_xml_uuid_folio es una funcion que nos permitira generar un xml
+# basado en otro, al cual se le generara un nuevo uuid, serie y folio
+# quedando los demas datos intactos.
+def test_generar_xml_uuid_folio():
+    # Obtener la ruta del archivo
+    current_directory = dirname(abspath(__file__))
+    filename = join_path(current_directory, '..\\xmls\\b_3_par.xml')
+
+    ruta_archivo_nuevo = generar_xml_uuid_folio(filename)
+
+    # Verificar que el archivo existe
+    assert isfile(ruta_archivo_nuevo)
+
+    # Abrir los 2 archivos y comparar uuid, serie y folio
+    with open(ruta_archivo_nuevo) as file:
+        xml_nuevo = BeautifulSoup(file.read(), 'xml')
+
+        with open(filename) as file_original:
+            xml_original = BeautifulSoup(file_original.read(), 'xml')
+
+            assert xml_nuevo.TimbreFiscalDigital['UUID'] != xml_original.TimbreFiscalDigital['UUID']
+            assert xml_nuevo.Comprobante['serie'] != xml_original.Comprobante['serie']
+            assert xml_nuevo.Comprobante['folio'] != xml_original.Comprobante['folio']
